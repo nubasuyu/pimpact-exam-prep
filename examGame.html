@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIMPACT Project Management Game App</title>
+    <style>
+        :root {
+            /* PIMPACT Color Scheme based on professional branding */
+            --PIMPACT-blue: #002855;
+            --PIMPACT-gold: #C49A2A;
+            --PIMPACT-light-blue: #E6EEF7;
+            --white: #FFFFFF;
+            --text-dark: #333333;
+            --success: #28a745;
+            --error: #dc3545;
+            --gray: #f4f4f4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--gray);
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header & Logo */
+        header {
+            background-color: var(--PIMPACT-blue);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-container img {
+            height: 60px;
+            width: auto;
+            background-color: var(--white);
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .logo-container h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--PIMPACT-gold);
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            color: var(--PIMPACT-light-blue);
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Login Screen */
+        .login-box {
+            max-width: 400px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: var(--PIMPACT-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--PIMPACT-gold);
+            outline: none;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--PIMPACT-blue);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: #001a38;
+        }
+
+        .btn-gold {
+            background-color: var(--PIMPACT-gold);
+            color: var(--PIMPACT-blue);
+        }
+
+        .btn-gold:hover {
+            background-color: #b08820;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            margin-top: 10px;
+        }
+
+        /* Dashboard Grid */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .module-card {
+            background: var(--white);
+            border: 2px solid var(--PIMPACT-light-blue);
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .module-card:hover {
+            border-color: var(--PIMPACT-gold);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .module-card h3 {
+            color: var(--PIMPACT-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .module-card p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .module-card.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #f9f9f9;
+        }
+
+        /* Quiz Screen */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            color: var(--PIMPACT-blue);
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--PIMPACT-gold);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .options-list {
+            list-style: none;
+        }
+
+        .option-item {
+            background: var(--PIMPACT-light-blue);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .option-item:hover {
+            background: #d4e4f7;
+        }
+
+        .option-item.selected {
+            border-color: var(--PIMPACT-blue);
+            background: #c2d6f0;
+        }
+
+        .option-item.correct {
+            background-color: #d4edda;
+            border-color: var(--success);
+            color: #155724;
+        }
+
+        .option-item.incorrect {
+            background-color: #f8d7da;
+            border-color: var(--error);
+            color: #721c24;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .quiz-controls .btn {
+            width: auto;
+            min-width: 120px;
+        }
+
+        /* Result Screen */
+        .result-box {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--PIMPACT-gold);
+            margin: 1rem 0;
+        }
+
+        .error-msg {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            .quiz-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .quiz-controls .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-container">
+        <!-- REPLACE 'PIMPACT_logo.png' WITH THE ACTUAL LOGO FILE FROM YOUR PDF -->
+        <img src="Pimpact.jpg" alt="PIMPACT Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cmVjdCB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIGZpbGw9IiNmZmYiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEwIiBmaWxsPSIjMDAyODU1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Q0lQTU48L3RleHQ+PC9zdmc+'">
+        <h1>PIMPACT Learning Game</h1>
+    </div>
+    <div class="user-info" id="userInfo" style="display: none;">
+        Student: <span id="studentCodeDisplay"></span> | <a href="#" onclick="logout()" style="color: var(--PIMPACT-gold);">Logout</a>
+    </div>
+</header>
+
+<main>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-box">
+            <h2>Student Access</h2>
+            <p style="margin-bottom: 1rem; color: #666;">Enter your unique access code to begin.</p>
+            <input type="text" id="accessCodeInput" placeholder="e.g., PIMPACT-2024-001">
+            <p class="error-msg" id="loginError">Invalid access code. Please try again.</p>
+            <button class="btn btn-gold" onclick="validateLogin()">Enter Game</button>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #888;">(Demo codes: PIMPACT-001, PIMPACT-002, STUDENT-A)</p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="dashboardScreen" class="screen">
+        <h2 style="color: var(--PIMPACT-blue); margin-bottom: 0.5rem;">Select a Module</h2>
+        <p style="color: #666; margin-bottom: 1rem;">Choose a module to test your knowledge. 3 modules are fully loaded, others are placeholders.</p>
+        <div class="module-grid" id="moduleGrid">
+            <!-- Modules injected via JS -->
+        </div>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quizScreen" class="screen">
+        <div class="quiz-header">
+            <span id="quizModuleTitle">Module Title</span>
+            <span id="quizProgress">Question 1 / 30</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="question-text" id="questionText">Loading question...</div>
+        <ul class="options-list" id="optionsList">
+            <!-- Options injected via JS -->
+        </ul>
+        <div class="quiz-controls">
+            <button class="btn btn-secondary" onclick="returnToDashboard()">Exit Quiz</button>
+            <button class="btn btn-gold" id="nextBtn" onclick="nextQuestion()" disabled>Next Question</button>
+        </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="resultScreen" class="screen">
+        <div class="result-box">
+            <h2 style="color: var(--PIMPACT-blue);">Module Completed!</h2>
+            <p>Here is your final score:</p>
+            <div class="score-display" id="finalScore">0 / 0</div>
+            <p id="scoreMessage" style="margin-bottom: 2rem; font-size: 1.1rem;"></p>
+            <button class="btn btn-gold" onclick="returnToDashboard()">Back to Dashboard</button>
+        </div>
+    </div>
+</main>
+
+<script>
+    // ==========================================
+    // 1. CONFIGURATION & DATA
+    // ==========================================
+    
+    // Valid access codes (In a real app, this would be validated against a backend database)
+    const validAccessCodes = ['PIMPACT-001', 'PIMPACT-002', 'PIMPACT-003', 'STUDENT-A', 'STUDENT-B'];
+
+    // Module Definitions
+    const modules = [
+        { id: 1, title: "Module 1: Principles of Project Management", status: "active" },
+        { id: 2, title: "Module 2: Project Management Methodologies (MOD-PIMPACT-002)", status: "active" },
+        { id: 3, title: "Module 3: Project Delivery Conceptual Tools", status: "placeholder" },
+        { id: 4, title: "Module 4: Requirements Engineering", status: "active" },
+        { id: 5, title: "Module 5: Project Risks and Issues Management", status: "placeholder" },
+        { id: 6, title: "Module 6: Project Planning and scheduling", status: "placeholder" },
+        { id: 7, title: "Module 7: Project Scope and Change Management", status: "placeholder" },
+        { id: 8, title: "Module 8: Quality Management", status: "placeholder" },
+        { id: 9, title: "Module 9: Agile Delivery", status: "placeholder" },
+        { id: 10, title: "Module 10: Project Leadership and building High Performing Teams", status: "placeholder" },
+        { id: 11, title: "Module 11: Understanding DUCAP Methodology", status: "placeholder" },
+        { id: 12, title: "Module 12: ,Managing International Programs and Portfolios", status: "placeholder" }
+    ];
+
+    // Question Bank (Populated for Modules 1, 2, and 4 based on provided documents)
+    const questionBank = {
+        1: [ // Module 1: Principles of Project Management (30 Questions)
+            { q: "Project management is best defined as:", options: ["Routine operations", "Marketing", "Planning and controlling resources", "Auditing"], ans: 2 },
+            { q: "Which of the following is NOT a project characteristic?", options: ["Unique and temporary", "No objectives", "Unlimited duration", "Continuous"], ans: 3 },
+            { q: "What is the first phase of the project life cycle?", options: ["Execution", "Closure", "Initiation", "Monitoring"], ans: 2 },
+            { q: "The triple constraint consists of:", options: ["Quality, HR, Risk", "Scope, Time, Cost", "Budget, Team, Client", "Time, Risk, HR"], ans: 1 },
+            { q: "A Gantt chart is primarily used for:", options: ["Scheduling", "Budgeting", "Hiring", "Procurement"], ans: 0 },
+            { q: "Who is responsible for overall project success?", options: ["Customer", "Auditor", "Project Manager", "Supplier"], ans: 2 },
+            { q: "Which document formally authorizes a project?", options: ["Project Charter", "Invoice", "Contract", "Minutes"], ans: 0 },
+            { q: "What does WBS stand for?", options: ["Work Breakdown Structure", "Work Budget Sheet", "Workflow Board", "Work Balance Schedule"], ans: 0 },
+            { q: "CPM is mainly used to:", options: ["Estimate budget", "Recruit staff", "Identify critical activities", "Close project"], ans: 2 },
+            { q: "PERT is most suitable when:", options: ["Budget fixed", "Durations are uncertain", "No dependencies", "Simple projects"], ans: 1 },
+            { q: "Stakeholder engagement primarily aims to:", options: ["Increase cost", "Build support", "Reduce quality", "Delay project"], ans: 1 },
+            { q: "Which is an internal stakeholder?", options: ["Project team", "Competitor", "Media", "Public"], ans: 0 },
+            { q: "SMART objectives are:", options: ["Simple Meaningful Accurate Real Timely", "Standard Manual", "Strategic", "Specific, Measurable, Achievable, Relevant, Time-bound"], ans: 3 },
+            { q: "Resource leveling is used to:", options: ["Increase scope", "Reduce quality", "Ignore deadlines", "Avoid over-allocation"], ans: 3 },
+            { q: "Project closure includes:", options: ["Recruit staff", "Define scope", "Handover deliverables", "Estimate cost"], ans: 2 },
+            { q: "Scope refers to:", options: ["Budget", "Quality", "Project boundaries", "Risk"], ans: 2 },
+            { q: "Risk in project management is:", options: ["Completed task", "Uncertain event", "Deliverable", "Milestone"], ans: 1 },
+            { q: "Quality management seeks to:", options: ["Increase scope", "Reduce planning", "Delay work", "Meet standards"], ans: 3 },
+            { q: "Which tool identifies project tasks hierarchically?", options: ["Invoice", "Risk log", "PERT", "WBS"], ans: 3 },
+            { q: "Which methodology is iterative?", options: ["Waterfall only", "Agile", "Linear budgeting", "Accounting"], ans: 1 },
+            { q: "Monitoring and controlling involves:", options: ["Hiring", "Tracking performance", "Selling", "Procurement"], ans: 1 },
+            { q: "Cost estimation is important because:", options: ["Support budgeting", "Replace planning", "Ignore risks", "Increase scope"], ans: 0 },
+            { q: "A feasibility study is conducted during:", options: ["Closure", "Initiation", "Execution", "Monitoring"], ans: 1 },
+            { q: "Which is a scheduling technique?", options: ["Ledger", "Invoice", "Balance sheet", "Gantt Chart"], ans: 3 },
+            { q: "The critical path is:", options: ["Shortest task", "Largest budget", "Longest dependent path", "Risk list"], ans: 2 },
+            { q: "Stakeholder register is used to:", options: ["Record stakeholders", "Estimate costs", "Track payroll", "Audit quality"], ans: 0 },
+            { q: "Which is a project constraint?", options: ["Logo", "Office", "Uniform", "Time"], ans: 3 },
+            { q: "Resource allocation answers:", options: ["Why project failed", "Who does what", "Client satisfaction", "Profit"], ans: 1 },
+            { q: "Lessons learned are documented during:", options: ["Closure", "Planning", "Execution", "Initiation"], ans: 0 },
+            { q: "The main purpose of project planning is:", options: ["Provide roadmap", "Increase risks", "Reduce communication", "Avoid stakeholders"], ans: 0 }
+        ],
+        2: [ // Module 2: MOD-PIMPACT-002 Methodologies (30 Questions)
+            { q: "Which of the following BEST defines a project management methodology?", options: ["A structured set of principles, practices, and processes guiding how projects are planned, executed, and closed", "A software application used to schedule and track project tasks", "An informal team agreement about how work will be distributed", "A financial reporting system for project cost tracking"], ans: 0 },
+            { q: "Which characteristic describes a methodology that progresses through a well-established sequence of steps where each step builds on the one before it?", options: ["Stakeholder-focused", "Repeatable and scalable", "Framework-based", "Process-driven"], ans: 3 },
+            { q: "A methodology that prioritises active engagement, continuous feedback, and clearly defined roles and responsibilities throughout the project lifecycle is BEST described as:", options: ["Process-driven", "Best-practice oriented", "Repeatable and scalable", "Stakeholder-focused"], ans: 3 },
+            { q: "Which of the following is NOT an objective of a well-selected project management methodology?", options: ["Streamlining problem-solving and decision-making", "Ensuring results are delivered as expected", "Eliminating the need for stakeholder engagement", "Prompting identification and resolution of conflicts"], ans: 2 },
+            { q: "Which of the following BEST explains why methodologies are important for Risk Management?", options: ["They guarantee that no risks will occur on a project", "They allow the project team to ignore minor risks", "They integrate systematic risk identification and mitigation, enabling teams to proactively recognise challenges early", "They replace the need for a risk register on small projects"], ans: 2 },
+            { q: "Which sequence CORRECTLY represents the stages of the Waterfall model?", options: ["Requirements → Design → Testing → Implementation → Deployment → Maintenance", "Requirements → Design → Implementation → Testing → Deployment → Maintenance", "Design → Requirements → Implementation → Testing → Maintenance → Deployment", "Planning → Design → Testing → Implementation → Maintenance → Deployment"], ans: 1 },
+            { q: "Which of the following is a WEAKNESS of the Waterfall model?", options: ["It produces comprehensive documentation at each stage", "It works well when requirements are stable and well-defined", "It provides a clear structure and predictable milestones", "Stakeholder involvement is typically limited to the beginning and end of the project"], ans: 3 },
+            { q: "The Waterfall methodology is MOST suitable for which type of project?", options: ["A Nigerian fintech startup developing a new mobile payment app with evolving features", "A government road construction project with clearly defined scope and regulatory requirements", "A software team building an MVP that requires frequent user testing and iteration", "A hospital service improvement project that adapts to real-time patient feedback"], ans: 1 },
+            { q: "In the Critical Path Method (CPM), what does the 'critical path' represent?", options: ["The shortest route through the project network with the most float", "The sequence of project tasks with the most available slack time", "The list of tasks that are optional and can be delayed without impact", "The longest sequence of dependent tasks that directly determines the project completion time"], ans: 3 },
+            { q: "In CPM, 'float' (also called slack) refers to:", options: ["The total project budget reserve allocated for risk", "The amount of time a non-critical task can be delayed without impacting the project deadline", "The difference between planned and actual cost at project completion", "The maximum number of resources that can be assigned to a single task"], ans: 1 },
+            { q: "Which of the following is a LIMITATION of the Critical Path Method (CPM)?", options: ["It provides a precise estimate of the minimum project duration", "It visualises task dependencies clearly through network diagrams", "It focuses primarily on time and does not account for resource availability constraints", "It supports time-cost trade-off decisions such as crashing and fast-tracking"], ans: 2 },
+            { q: "Agile project management breaks projects into short delivery cycles. What are these cycles commonly called?", options: ["Milestones", "Phases", "Sprints or iterations", "Segments"], ans: 2 },
+            { q: "Which of the following is a KEY feature of Agile-based approaches?", options: ["All project requirements are fixed and fully defined at the very start", "Teams work in self-organising, cross-functional groups with daily stand-up meetings", "Stakeholder involvement is restricted to the initial requirements phase only", "Documentation is the primary measure of project progress"], ans: 1 },
+            { q: "Agile methodology is LEAST suitable for which scenario?", options: ["A Nigerian fintech company developing a payment app with frequently changing features", "A healthcare IT team building a patient portal with continuous user feedback", "A large civil infrastructure project with strict regulatory compliance and fixed deliverables", "A startup launching an MVP to test market response before full deployment"], ans: 2 },
+            { q: "Which Nigerian company is cited in the module as using Scrum to rapidly develop and deploy payment APIs?", options: ["Access Bank", "Paystack", "Flutterwave", "MTN Nigeria"], ans: 2 },
+            { q: "In Scrum, which role is responsible for facilitating the team, removing obstacles, and ensuring adherence to Scrum principles?", options: ["Scrum Master", "Product Owner", "Project Sponsor", "Team Lead"], ans: 0 },
+            { q: "At the END of each Scrum sprint, the team holds which meeting to reflect on what went well, what could improve, and how to make the next sprint more effective?", options: ["Sprint Planning", "Daily Stand-up", "Sprint Review", "Sprint Retrospective"], ans: 3 },
+            { q: "Scrum is generally NOT recommended in which situation?", options: ["When the problem is complex and not fully understood at the outset", "When management expects fixed scope, fixed time, and fixed budget", "When the team is collaborative, self-motivated, and empowered", "When stakeholders are engaged and open to iterative delivery"], ans: 1 },
+            { q: "Kanban originated in the 1940s as part of which production system?", options: ["The Ford Assembly Line System", "The ISO Quality Management System", "The Toyota Production System", "The Lean Manufacturing Framework"], ans: 2 },
+            { q: "A key principle of Kanban is limiting Work In Progress (WIP). What is the PRIMARY purpose of WIP limits?", options: ["To enforce a strict team hierarchy and reduce decision-making autonomy", "To prevent overloading team members, reduce multitasking, and encourage task completion before starting new work", "To ensure that all tasks are completed within a fixed two-week sprint", "To increase the number of tasks assigned to each team member simultaneously"], ans: 1 },
+            { q: "Lean project management focuses primarily on delivering maximum value by:", options: ["Eliminating waste and reducing inefficiencies across every stage of the project lifecycle", "Following a strict sequential process with extensive documentation at each phase", "Assigning fixed roles to each team member with no cross-functional collaboration", "Producing the largest possible deliverable at the end of the project"], ans: 0 },
+            { q: "In the context of Lean methodology, what does the Japanese term 'muda' refer to?", options: ["A form of daily stand-up meeting common in Toyota factories", "The process of visualising workflow on a Kanban board", "Waste — activities that consume resources but do not deliver value to the customer", "The minimum viable product developed during a Lean sprint"], ans: 2 },
+            { q: "DUCAP was developed by which organisation to address Nigerian project delivery challenges?", options: ["The Chartered Institute of Project Managers of Nigeria (PIMPACT)", "The Project Management Institute (PMI) of the United States", "The Association for Project Management (APM) of the United Kingdom", "The National Planning Commission of Nigeria"], ans: 0 },
+            { q: "Which of the following is CORRECTLY listed as one of the DUCAP Pillar Elements?", options: ["Agile Sprint Planning", "Continuous Software Integration", "Cultural, Religious and Political Sensitivity", "Work Breakdown Structure Management"], ans: 2 },
+            { q: "DUCAP's core philosophy is specifically designed for:", options: ["Silicon Valley technology companies with stable infrastructure", "European public sector agencies with well-funded governance systems", "Nigerian project managers working in dynamic, resource-constrained environments", "Global multinational corporations managing projects in over 50 countries"], ans: 2 },
+            { q: "PRINCE2 is guided by seven principles, seven themes, and seven processes. Which of the following is one of PRINCE2's CORE PRINCIPLES?", options: ["Continuous sprint delivery", "Eliminate all project documentation", "Manage by exception", "Prioritise working software over governance"], ans: 2 },
+            { q: "In PRINCE2, the tolerance-based delegation concept where the Project Manager operates within set limits without needing constant approval is called:", options: ["Stage-by-stage approval", "Product-based planning", "Business case management", "Manage by exception"], ans: 3 },
+            { q: "The PMBOK Guide is published by which organisation and forms the basis of which professional certification?", options: ["PIMPACT — CPMP certification", "Axelos — PRINCE2 Foundation certification", "PMI — PMP (Project Management Professional) certification", "APM — APM Project Management Qualification"], ans: 2 },
+            { q: "A construction company is building a major highway in Nigeria with large scope, high compliance requirements, strict deadlines, and multiple government stakeholders. Which methodology combination is MOST appropriate?", options: ["Agile (Scrum) only", "Kanban only", "PRINCE2 combined with Waterfall", "Lean only"], ans: 2 },
+            { q: "In a scoring model used for methodology selection, what is the CORRECT sequence of steps?", options: ["Rate methodologies → Assign weights → Define criteria → Multiply → Select highest", "Define criteria → Assign weights → Rate each methodology → Multiply ratings by weights → Select highest score", "Select highest score → Define criteria → Rate methodologies → Assign weights → Multiply", "Assign weights → Select highest score → Define criteria → Rate methodologies → Multiply"], ans: 1 }
+        ],
+        4: [ // Module 4: Requirements Engineering (30 Questions)
+            { q: "Requirements Engineering (RE) is:", options: ["Structured requirements process", "Budgeting", "Hiring", "Procurement"], ans: 0 },
+            { q: "What does SRS stand for?", options: ["System Resource Sheet", "Software Requirements Specification", "Software Review Standard", "Scope Report Sheet"], ans: 1 },
+            { q: "Scope creep means:", options: ["Fast delivery", "Uncontrolled expansion", "Quality check", "Risk register"], ans: 1 },
+            { q: "MoSCoW is used for:", options: ["Scheduling", "Budgeting", "Recruitment", "Prioritization"], ans: 3 },
+            { q: "Which is NOT an RE pillar?", options: ["Elicitation", "Analysis", "Manufacturing", "Validation"], ans: 2 },
+            { q: "Requirements elicitation focuses on:", options: ["Coding", "Testing", "Gathering needs", "Closing"], ans: 2 },
+            { q: "Interviews are used during:", options: ["Deployment", "Closure", "Elicitation", "Procurement"], ans: 2 },
+            { q: "Requirements analysis aims to:", options: ["Hire staff", "Refine and prioritize", "Purchase tools", "Close project"], ans: 1 },
+            { q: "BRD stands for:", options: ["Basic Report Data", "Business Requirements Document", "Budget Review Document", "Business Resource Definition"], ans: 1 },
+            { q: "Verification asks:", options: ["Will it sell?", "Is budget enough?", "Who approved?", "Are we building the product right?"], ans: 3 },
+            { q: "Validation asks:", options: ["Who coded?", "How much?", "When finished?", "Are we building the right product?"], ans: 3 },
+            { q: "Traceability matrix is used to:", options: ["Pay suppliers", "Hire staff", "Prepare invoices", "Track requirements"], ans: 3 },
+            { q: "Jira is mainly used for:", options: ["Payroll", "Accounting", "Managing requirements", "Marketing"], ans: 2 },
+            { q: "Which is a non-functional requirement?", options: ["Performance", "Logo", "Budget", "Invoice"], ans: 0 },
+            { q: "Prototype is useful for:", options: ["Clarifying needs", "Closing", "Auditing", "Procurement"], ans: 0 },
+            { q: "Version control belongs to:", options: ["Execution", "Requirements management", "Scheduling", "Procurement"], ans: 1 },
+            { q: "IBM DOORS supports:", options: ["Payroll", "Traceability", "Marketing", "Sales"], ans: 1 },
+            { q: "Stakeholder needs should be:", options: ["Ignored", "Clearly identified", "Assumed", "Removed"], ans: 1 },
+            { q: "Poor RE often results in:", options: ["Rework", "Profit", "Lower workload", "Less planning"], ans: 0 },
+            { q: "Requirement documentation should be:", options: ["Complex", "Hidden", "Verbal only", "Clear and unambiguous"], ans: 3 },
+            { q: "Which pillar prevents scope creep most directly?", options: ["Requirements management", "Procurement", "Deployment", "Closure"], ans: 0 },
+            { q: "Peer review is part of:", options: ["Budgeting", "Scheduling", "Verification & Validation", "Sales"], ans: 2 },
+            { q: "SWOT is used during:", options: ["Analysis", "Closure", "Execution", "Procurement"], ans: 0 },
+            { q: "User stories are common in:", options: ["Agile", "Waterfall only", "Accounting", "Construction"], ans: 0 },
+            { q: "Which tool supports wireframing?", options: ["Excel only", "Calculator", "Figma", "Paint"], ans: 2 },
+            { q: "RE adds value by:", options: ["Reducing rework", "Increasing scope", "Ignoring users", "Reducing quality"], ans: 0 },
+            { q: "Functional requirements describe:", options: ["Budget", "Organization chart", "Logo", "System behavior"], ans: 3 },
+            { q: "Requirements management includes:", options: ["Recruitment", "Change control", "Auditing", "Sales"], ans: 1 },
+            { q: "The five RE pillars end with:", options: ["Budgeting", "Deployment", "Verification & Validation", "Closure"], ans: 2 },
+            { q: "Successful RE improves:", options: ["Confusion", "Rework", "Delays", "Stakeholder satisfaction"], ans: 3 }
+        ]
+    };
+
+    // Generate placeholder questions for modules 3, 5-12
+    for (let i = 1; i <= 12; i++) {
+        if (!questionBank[i]) {
+            questionBank[i] = [
+                { q: `This is a placeholder question for Module ${i}.`, options: ["Option A", "Option B", "Option C", "Option D"], ans: 0 },
+                { q: `Add real questions for Module ${i} in the questionBank object.`, options: ["Option A", "Option B", "Option C", "Option D"], ans: 0 }
+            ];
+        }
+    }
+
+    // ==========================================
+    // 2. STATE MANAGEMENT
+    // ==========================================
+    let currentState = {
+        studentCode: null,
+        currentModuleId: null,
+        currentQuestionIndex: 0,
+        score: 0,
+        questions: [],
+        hasAnswered: false
+    };
+
+    // ==========================================
+    // 3. CORE FUNCTIONS
+    // ==========================================
+
+    function validateLogin() {
+        const input = document.getElementById('accessCodeInput').value.trim().toUpperCase();
+        const errorMsg = document.getElementById('loginError');
+        
+        if (validAccessCodes.includes(input)) {
+            currentState.studentCode = input;
+            document.getElementById('studentCodeDisplay').textContent = input;
+            document.getElementById('userInfo').style.display = 'block';
+            errorMsg.style.display = 'none';
+            showScreen('dashboardScreen');
+            renderDashboard();
+        } else {
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    function logout() {
+        currentState.studentCode = null;
+        document.getElementById('accessCodeInput').value = '';
+        document.getElementById('userInfo').style.display = 'none';
+        showScreen('loginScreen');
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function renderDashboard() {
+        const grid = document.getElementById('moduleGrid');
+        grid.innerHTML = '';
+        
+        modules.forEach(mod => {
+            const card = document.createElement('div');
+            card.className = `module-card ${mod.status === 'placeholder' ? 'locked' : ''}`;
+            card.innerHTML = `
+                <h3>${mod.title}</h3>
+                <p>${mod.status === 'active' ? questionBank[mod.id].length + ' Questions Available' : 'Coming Soon'}</p>
+            `;
+            if (mod.status === 'active') {
+                card.onclick = () => startQuiz(mod.id);
+            }
+            grid.appendChild(card);
+        });
+    }
+
+    function startQuiz(moduleId) {
+        currentState.currentModuleId = moduleId;
+        currentState.currentQuestionIndex = 0;
+        currentState.score = 0;
+        // Shuffle questions for a game-like experience (optional, remove .sort() if sequential is preferred)
+        currentState.questions = [...questionBank[moduleId]].sort(() => Math.random() - 0.5);
+        
+        const modTitle = modules.find(m => m.id === moduleId).title;
+        document.getElementById('quizModuleTitle').textContent = modTitle;
+        
+        showScreen('quizScreen');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const qData = currentState.questions[currentState.currentQuestionIndex];
+        const totalQ = currentState.questions.length;
+        
+        currentState.hasAnswered = false;
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('nextBtn').textContent = 
+            currentState.currentQuestionIndex === totalQ - 1 ? "Finish Quiz" : "Next Question";
+
+        // Update Progress
+        document.getElementById('quizProgress').textContent = `Question ${currentState.currentQuestionIndex + 1} / ${totalQ}`;
+        const progressPct = ((currentState.currentQuestionIndex) / totalQ) * 100;
+        document.getElementById('progressFill').style.width = `${progressPct}%`;
+
+        // Render Question
+        document.getElementById('questionText').textContent = qData.q;
+        
+        const optionsList = document.getElementById('optionsList');
+        optionsList.innerHTML = '';
+        
+        const labels = ['A', 'B', 'C', 'D'];
+        qData.options.forEach((opt, index) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.innerHTML = `<strong>${labels[index]}.</strong> ${opt}`;
+            li.onclick = () => selectOption(index, li);
+            optionsList.appendChild(li);
+        });
+    }
+
+    function selectOption(selectedIndex, element) {
+        if (currentState.hasAnswered) return;
+        currentState.hasAnswered = true;
+
+        const qData = currentState.questions[currentState.currentQuestionIndex];
+        const options = document.querySelectorAll('.option-item');
+
+        // Highlight correct and incorrect
+        if (selectedIndex === qData.ans) {
+            element.classList.add('correct');
+            currentState.score++;
+        } else {
+            element.classList.add('incorrect');
+            options[qData.ans].classList.add('correct'); // Show correct answer
+        }
+
+        // Disable further clicks
+        options.forEach(opt => opt.style.cursor = 'default');
+        
+        // Enable next button
+        document.getElementById('nextBtn').disabled = false;
+    }
+
+    function nextQuestion() {
+        currentState.currentQuestionIndex++;
+        if (currentState.currentQuestionIndex < currentState.questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        const total = currentState.questions.length;
+        const score = currentState.score;
+        const percentage = Math.round((score / total) * 100);
+        
+        document.getElementById('finalScore').textContent = `${score} / ${total} (${percentage}%)`;
+        
+        let msg = "";
+        if (percentage >= 80) msg = "Excellent! You have a strong grasp of this module.";
+        else if (percentage >= 60) msg = "Good job! Review the incorrect answers to improve.";
+        else msg = "Keep studying! Review the module materials and try again.";
+        
+        document.getElementById('scoreMessage').textContent = msg;
+        document.getElementById('progressFill').style.width = '100%';
+        
+        showScreen('resultScreen');
+    }
+
+    function returnToDashboard() {
+        showScreen('dashboardScreen');
+    }
+
+    // Allow "Enter" key on login
+    document.getElementById('accessCodeInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') validateLogin();
+    });
+
+</script>
+
+</body>
+</html>
