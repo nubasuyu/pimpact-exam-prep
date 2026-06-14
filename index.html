@@ -84,6 +84,19 @@
 
         .error-msg { color: var(--error); font-size: 0.9rem; margin-bottom: 1rem; display: none; }
 
+        /* Review Screen Styles */
+        .review-item { background: var(--white); border: 1px solid #ddd; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .review-item.correct { border-left: 5px solid var(--success); }
+        .review-item.incorrect { border-left: 5px solid var(--error); }
+        .review-item.skipped { border-left: 5px solid #6c757d; }
+        .review-question { font-weight: bold; margin-bottom: 1rem; color: var(--text-dark); line-height: 1.4; }
+        .review-options { list-style: none; margin-bottom: 1rem; padding: 0; }
+        .review-options li { padding: 0.6rem; border-radius: 4px; margin-bottom: 0.4rem; border: 1px solid transparent; }
+        .review-options li.correct-answer { background-color: #d4edda; color: #155724; font-weight: 600; border-color: var(--success); }
+        .review-options li.user-wrong { background-color: #f8d7da; color: #721c24; border-color: var(--error); }
+        .review-explanation { background: #f8f9fa; padding: 1rem; border-radius: 4px; border-left: 4px solid var(--pimpact-blue); color: #383d41; line-height: 1.5; }
+        .review-explanation strong { color: var(--pimpact-blue); }
+
         @media (max-width: 600px) {
             header { flex-direction: column; text-align: center; gap: 10px; }
             .quiz-controls { flex-direction: column; gap: 10px; }
@@ -109,10 +122,10 @@
         <div class="login-box">
             <h2>Student Access</h2>
             <p style="margin-bottom: 1rem; color: #666;">Enter your unique access code to begin.</p>
-            <input type="text" id="accessCodeInput" placeholder="e.g., PIMPACT-2024-001">
+            <input type="text" id="accessCodeInput" placeholder="Access code">
             <p class="error-msg" id="loginError">Invalid access code. Please try again.</p>
             <button class="btn btn-gold" onclick="validateLogin()">Enter Game</button>
-            <p style="margin-top: 1rem; font-size: 0.8rem; color: #888;">(Demo Students: PIMPACT-001, PIMPACT-002 | Admin: ADMIN-PIMPACT)</p>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #888;"></p>
         </div>
     </div>
 
@@ -153,9 +166,8 @@
             <h3>⚠️ Quiz Rules & Timing</h3>
             <ul>
                 <li><strong>Total Time Limit:</strong> 10 Minutes per module.</li>
-                <li><strong>Per Question Limit:</strong> 20 Seconds per question.</li>
-                <li><strong>Auto-Advance:</strong> If you do not answer within 20 seconds, it will be marked incorrect and move to the next question.</li>
-                <li><strong>Explanations:</strong> A detailed explanation will be shown immediately after you select an answer.</li>
+                <li><strong>Pacing:</strong> Answer at your own pace. There is no time limit per question.</li>
+                <li><strong>Review:</strong> At the end of the module, you can review all questions and explanations to learn from your answers.</li>
             </ul>
         </div>
         <div style="display: flex; gap: 15px;">
@@ -168,8 +180,7 @@
         <div class="quiz-header">
             <span id="quizModuleTitle" style="font-weight: bold; color: var(--pimpact-blue);"></span>
             <div class="timer-display" id="timerDisplay">
-                <span>Module: <span id="moduleTimer">10:00</span></span>
-                <span>Question: <span id="questionTimer">00:20</span></span>
+                <span>Module Time Left: <span id="moduleTimer">10:00</span></span>
             </div>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -193,119 +204,26 @@
             <p>Here is your final score:</p>
             <div style="font-size: 3rem; font-weight: bold; color: var(--pimpact-gold); margin: 1rem 0;" id="finalScore">0 / 0</div>
             <p id="scoreMessage" style="margin-bottom: 2rem; font-size: 1.1rem;"></p>
-            <button class="btn btn-gold" style="max-width: 300px; margin: 0 auto;" onclick="returnToDashboard()">Back to Dashboard</button>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-secondary" style="max-width: 300px; flex: 1;" onclick="returnToDashboard()">Back to Dashboard</button>
+                <button class="btn btn-gold" style="max-width: 300px; flex: 1;" onclick="showReview()">Review Answers</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reviewScreen" class="screen">
+        <h2 style="color: var(--pimpact-blue); margin-bottom: 1rem;">Answer Review</h2>
+        <p style="margin-bottom: 1.5rem; color: #666;">Review your answers and the explanations below to learn from this module.</p>
+        <div id="reviewContent"></div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn btn-gold" style="max-width: 300px;" onclick="returnToDashboard()">Back to Dashboard</button>
         </div>
     </div>
 </main>
 
 <script>
     const DB_KEY = 'pimpact_game_db';
-    const validAccessCodes =
- ['PIMPACT-001', 
- 'PIMPACT-002', 
- 'PIMPACT-003',
-  "PIMPACT-4829QF",
-  "PIMPACT-7351MK",
-  "PIMPACT-6192ZT",
-  "PIMPACT-9031HA",
-  "PIMPACT-5748XP",
-  "PIMPACT-3186RD",
-  "PIMPACT-7926LW",
-  "PIMPACT-4652BJ",
-  "PIMPACT-8415CN",
-  "PIMPACT-2569VG",
-  "PIMPACT-1084YS",
-  "PIMPACT-6973PE",
-  "PIMPACT-5241TR",
-  "PIMPACT-8807KL",
-  "PIMPACT-3419MX",
-  "PIMPACT-7625AF",
-  "PIMPACT-1958QH",
-  "PIMPACT-4306ZW",
-  "PIMPACT-9172DL",
-  "PIMPACT-6835NJ",
-  "PIMPACT-2548BT",
-  "PIMPACT-7401CV",
-  "PIMPACT-8163XR",
-  "PIMPACT-5937PK",
-  "PIMPACT-1629GM",
-  "PIMPACT-4758UY",
-  "PIMPACT-9384HF",
-  "PIMPACT-2817QA",
-  "PIMPACT-6045LN",
-  "PIMPACT-8572WE",
-  "PIMPACT-1496CJ",
-  "PIMPACT-7903RB",
-  "PIMPACT-5328XT",
-  "PIMPACT-4617KP",
-  "PIMPACT-9054ZM",
-  "PIMPACT-2861FD",
-  "PIMPACT-7739HL",
-  "PIMPACT-3584QV",
-  "PIMPACT-6217YA",
-  "PIMPACT-1408NX",
-  "PIMPACT-8596TJ",
-  "PIMPACT-4925DG",
-  "PIMPACT-7183BW",
-  "PIMPACT-2650RU",
-  "PIMPACT-9841CE",
-  "PIMPACT-5072ML",
-  "PIMPACT-1738VK",
-  "PIMPACT-6485PA",
-  "PIMPACT-8319ZH",
-  "PIMPACT-2947XF",
-  "PIMPACT-5603GW",
-  "PIMPACT-7864QT",
-  "PIMPACT-9157LB",
-  "PIMPACT-2476NM",
-  "PIMPACT-6849JD",
-  "PIMPACT-3580RX",
-  "PIMPACT-7294UF",
-  "PIMPACT-1027HC",
-  "PIMPACT-8936WP",
-  "PIMPACT-4158KV",
-  "PIMPACT-6372AZ",
-  "PIMPACT-9485BN",
-  "PIMPACT-2763TM",
-  "PIMPACT-5809XE",
-  "PIMPACT-7146PH",
-  "PIMPACT-3602QJ",
-  "PIMPACT-8291LC",
-  "PIMPACT-1547DY",
-  "PIMPACT-9068MR",
-  "PIMPACT-2485FU",
-  "PIMPACT-6719XB",
-  "PIMPACT-3824VP",
-  "PIMPACT-7150ZH",
-  "PIMPACT-4938CT",
-  "PIMPACT-8601RL",
-  "PIMPACT-1275GW",
-  "PIMPACT-5492KN",
-  "PIMPACT-9347XF",
-  "PIMPACT-2681QB",
-  "PIMPACT-7056MT",
-  "PIMPACT-4129HY",
-  "PIMPACT-8735PV",
-  "PIMPACT-1964ZA",
-  "PIMPACT-6582DL",
-  "PIMPACT-3247XF",
-  "PIMPACT-9815TC",
-  "PIMPACT-5470RU",
-  "PIMPACT-7328BM",
-  "PIMPACT-2649XH",
-  "PIMPACT-8194QA",
-  "PIMPACT-3751WL",
-  "PIMPACT-9406KE",
-  "PIMPACT-2867YT",
-  "PIMPACT-6538NP",
-  "PIMPACT-1049RV",
-  "PIMPACT-8712CM",
-  "PIMPACT-5396XJ",
-  "PIMPACT-7481PH",
-  "PIMPACT-2654ZD",
-  "PIMPACT-9830LW",
-  "PIMPACT-4167BK"
-];
+    const validAccessCodes = ['PIMPACT-001', 'PIMPACT-002', 'PIMPACT-003', "PIMPACT-4829QF", "PIMPACT-7351MK", "PIMPACT-6192ZT", "PIMPACT-9031HA", "PIMPACT-5748XP", "PIMPACT-3186RD", "PIMPACT-7926LW", "PIMPACT-4652BJ", "PIMPACT-8415CN", "PIMPACT-2569VG", "PIMPACT-1084YS", "PIMPACT-6973PE", "PIMPACT-5241TR", "PIMPACT-8807KL", "PIMPACT-3419MX", "PIMPACT-7625AF", "PIMPACT-1958QH", "PIMPACT-4306ZW", "PIMPACT-9172DL", "PIMPACT-6835NJ", "PIMPACT-2548BT", "PIMPACT-7401CV", "PIMPACT-8163XR", "PIMPACT-5937PK", "PIMPACT-1629GM", "PIMPACT-4758UY", "PIMPACT-9384HF", "PIMPACT-2817QA", "PIMPACT-6045LN", "PIMPACT-8572WE", "PIMPACT-1496CJ", "PIMPACT-7903RB", "PIMPACT-5328XT", "PIMPACT-4617KP", "PIMPACT-9054ZM", "PIMPACT-2861FD", "PIMPACT-7739HL", "PIMPACT-3584QV", "PIMPACT-6217YA", "PIMPACT-1408NX", "PIMPACT-8596TJ", "PIMPACT-4925DG", "PIMPACT-7183BW", "PIMPACT-2650RU", "PIMPACT-9841CE", "PIMPACT-5072ML", "PIMPACT-1738VK", "PIMPACT-6485PA", "PIMPACT-8319ZH", "PIMPACT-2947XF", "PIMPACT-5603GW", "PIMPACT-7864QT", "PIMPACT-9157LB", "PIMPACT-2476NM", "PIMPACT-6849JD", "PIMPACT-3580RX", "PIMPACT-7294UF", "PIMPACT-1027HC", "PIMPACT-8936WP", "PIMPACT-4158KV", "PIMPACT-6372AZ", "PIMPACT-9485BN", "PIMPACT-2763TM", "PIMPACT-5809XE", "PIMPACT-7146PH", "PIMPACT-3602QJ", "PIMPACT-8291LC", "PIMPACT-1547DY", "PIMPACT-9068MR", "PIMPACT-2485FU", "PIMPACT-6719XB", "PIMPACT-3824VP", "PIMPACT-7150ZH", "PIMPACT-4938CT", "PIMPACT-8601RL", "PIMPACT-1275GW", "PIMPACT-5492KN", "PIMPACT-9347XF", "PIMPACT-2681QB", "PIMPACT-7056MT", "PIMPACT-4129HY", "PIMPACT-8735PV", "PIMPACT-1964ZA", "PIMPACT-6582DL", "PIMPACT-3247XF", "PIMPACT-9815TC", "PIMPACT-5470RU", "PIMPACT-7328BM", "PIMPACT-2649XH", "PIMPACT-8194QA", "PIMPACT-3751WL", "PIMPACT-9406KE", "PIMPACT-2867YT", "PIMPACT-6538NP", "PIMPACT-1049RV", "PIMPACT-8712CM", "PIMPACT-5396XJ", "PIMPACT-7481PH", "PIMPACT-2654ZD", "PIMPACT-9830LW", "PIMPACT-4167BK"];
     const ADMIN_CODE = 'ADMIN-PIMPACT';
 
     function getDB() { return JSON.parse(localStorage.getItem(DB_KEY) || '{}'); }
@@ -319,16 +237,17 @@
 
     const modules = [
         { id: 1, title: "Module 1: Principles of Project Management", status: "active" },
-        { id: 2, title: "Module 2: PM Methodologies (MOD-PIMPACT-002)", status: "active" },
+        { id: 2, title: "Module 2: PM Methodologies", status: "active" },
         { id: 3, title: "Module 3: Project Delivery Conceptual Tools", status: "placeholder" },
         { id: 4, title: "Module 4: Requirements Engineering", status: "active" },
         { id: 5, title: "Module 5: Project Risks and Issues Management", status: "active" },
-        { id: 6, title: "Module 6: Project Planning and Scheduling", status: "placeholder" },
+        { id: 6, title: "Module 6: Project Planning, Agile Delivery & DUCAP", status: "active" },
         { id: 7, title: "Module 7: Project Scope and Change Management", status: "placeholder" },
         { id: 8, title: "Module 8: Quality management", status: "active" },
         { id: 9, title: "Module 9: Agile Delivery", status: "placeholder" },
         { id: 10, title: "Module 10: Leadership and Team Building", status: "active" },
         { id: 11, title: "Module 11: Understanding DUCAP Methodology", status: "placeholder" },
+        { id: 11, title: "Module 12: international Programs & Portfolios", status: "placeholder" }
     ];
 
     const questionBank = {
@@ -460,6 +379,38 @@
             { q: "Which tool helps evaluate alternative decisions and their possible outcomes?", options: ["Fishbone Diagram", "Risk Matrix", "Decision Tree", "SWOT Matrix"], ans: 2, exp: "A Decision Tree diagram is used in quantitative risk analysis to evaluate alternative decisions and their possible outcomes, calculating the Expected Monetary Value (EMV) of each path." },
             { q: "A project manager notices multiple high-priority procurement-related risks. What is the greatest benefit of risk categorization in this situation?", options: ["Eliminates all procurement risks", "Helps identify systemic issues requiring additional controls", "Removes the need for monitoring", "Reduces stakeholder communication"], ans: 1, exp: "Categorizing risks (e.g., by source like procurement) helps identify areas of the project with a high concentration of risk, revealing systemic issues that may require additional controls or root cause analysis." }
         ],
+        6: [ 
+            { q: "What is the PRIMARY purpose of the project planning phase?", options: ["To execute the project deliverables", "To define objectives, scope, schedule, and resources required to achieve project goals", "To close the project and hand over deliverables", "To monitor and control project risks"], ans: 1, exp: "The primary purpose of project planning is to establish the total scope of the effort, define and refine objectives, and develop the course of action (schedule, budget, resources) required to attain those objectives." },
+            { q: "In a Work Breakdown Structure (WBS), the lowest level of decomposition is known as a:", options: ["Milestone", "Work package", "Activity", "Deliverable"], ans: 1, exp: "The lowest level of a WBS is the work package. Work packages can be further decomposed into activities for scheduling and cost estimation." },
+            { q: "The '100% Rule' in Work Breakdown Structure (WBS) creation dictates that:", options: ["The project must be completed within 100% of the approved budget", "The WBS must include 100% of the work defined by the project scope, capturing all deliverables at every level", "100% of stakeholders must approve the WBS before execution begins", "The project manager must allocate 100% of their time to planning"], ans: 1, exp: "The 100% rule is a critical principle of the WBS. It states that the WBS must capture 100% of the scope defined by the project scope baseline, ensuring no work is omitted or extra work added." },
+            { q: "Which of the following is the MOST common type of dependency used in the Precedence Diagramming Method (PDM)?", options: ["Finish-to-Start (FS)", "Start-to-Start (SS)", "Finish-to-Finish (FF)", "Start-to-Finish (SF)"], ans: 0, exp: "Finish-to-Start (FS) is the most common dependency. It means the successor activity cannot start until the predecessor activity has finished." },
+            { q: "A project manager determines that foundation pouring can begin 2 days before the curing of the previous section is fully complete. This 2-day overlap is an example of:", options: ["Lag", "Float", "Lead", "Slack"], ans: 2, exp: "A lead is an acceleration of the successor activity. A negative lead (overlap) allows a successor activity to start before the predecessor is fully completed." },
+            { q: "Using the Program Evaluation and Review Technique (PERT), what is the Expected Duration (TE) if the Optimistic time is 4 days, Most Likely is 6 days, and Pessimistic is 14 days?", options: ["6 days", "7 days", "8 days", "9 days"], ans: 1, exp: "The PERT Beta distribution formula is (Optimistic + 4*Most Likely + Pessimistic) / 6. Calculation: (4 + 24 + 14) / 6 = 42 / 6 = 7 days." },
+            { q: "In PERT analysis, what does the formula (Pessimistic - Optimistic) / 6 calculate?", options: ["Expected Duration", "Standard Deviation", "Variance", "Critical Path Duration"], ans: 1, exp: "The formula (Pessimistic - Optimistic) / 6 calculates the Standard Deviation, which measures the uncertainty or risk associated with the activity duration estimate." },
+            { q: "The Critical Path in a project network diagram is BEST defined as:", options: ["The shortest path through the network with the highest risk", "The sequence of activities with the most available float", "The longest path through the network, determining the minimum project duration", "The path that requires the highest budget allocation"], ans: 2, exp: "The critical path is the longest sequence of dependent activities through the network. It determines the shortest possible time to complete the project (minimum project duration)." },
+            { q: "What is 'float' or 'slack' in project scheduling?", options: ["The amount of budget remaining after project execution", "The amount of time an activity can be delayed without delaying the project finish date", "The extra resources assigned to critical path activities", "The time allocated for project closure and handover"], ans: 1, exp: "Float (or slack) is the amount of time an activity can be delayed from its early start without delaying the project finish date or violating a schedule constraint." },
+            { q: "Which scheduling tool visually represents project activities as horizontal bars along a timeline?", options: ["Network Diagram", "Gantt Chart", "PERT Chart", "Work Breakdown Structure"], ans: 1, exp: "A Gantt chart (or bar chart) is a visual scheduling tool that displays activities as horizontal bars against a calendar timeline, making it easy to see start and end dates." },
+            { q: "A project manager needs to shorten the project schedule without adding extra resources or cost. Which schedule compression technique should they use?", options: ["Crashing", "Fast-tracking", "Resource leveling", "What-if analysis"], ans: 1, exp: "Fast-tracking involves performing activities in parallel that were originally planned in sequence. It does not add cost but may increase risk." },
+            { q: "'Crashing' a project schedule involves:", options: ["Performing activities in parallel that were originally planned in sequence", "Adding additional resources to critical path activities to shorten their duration, usually at an increased cost", "Removing non-essential scope to meet a deadline", "Delaying non-critical activities to conserve resources"], ans: 1, exp: "Crashing is a schedule compression technique where additional resources (like overtime or extra staff) are added to critical path activities to shorten the duration, typically increasing project costs." },
+            { q: "What is the PRIMARY difference between resource leveling and resource smoothing?", options: ["Resource leveling may change the critical path, while resource smoothing only adjusts activities within their float", "Resource smoothing adds more resources, while resource leveling removes resources", "Resource leveling is used in Agile, while resource smoothing is used in Waterfall", "There is no difference; they are interchangeable terms"], ans: 0, exp: "Resource leveling is used when resources are over-allocated and may extend the critical path. Resource smoothing adjusts activities only within their free and total float, ensuring the project end date is not changed." },
+            { q: "In project scheduling, a 'milestone' is BEST described as:", options: ["A critical path activity with a duration of one week", "A significant point or event in the project with zero duration", "The final deliverable handed over to the client", "A task that consumes the highest amount of budget"], ans: 1, exp: "A milestone is a significant point or event in a project. It has a duration of zero and is used to mark the completion of a major phase or deliverable." },
+            { q: "Which of the following BEST describes 'Rolling Wave Planning'?", options: ["Planning the entire project in detail before execution begins", "An iterative planning technique where near-term work is planned in detail while future work is planned at a higher level", "A method of compressing the schedule by overlapping phases", "The process of updating the project baseline after a scope change"], ans: 1, exp: "Rolling wave planning is a form of progressive elaboration where work to be done in the near future is planned in detail, while work in the future is planned at a higher level (e.g., as milestones)." },
+            { q: "The Critical Chain Method (CCM) differs from the Critical Path Method (CPM) primarily by:", options: ["Focusing on activity duration rather than dependencies", "Incorporating resource constraints and using buffers to protect the project schedule", "Eliminating the need for a network diagram", "Using only Finish-to-Start dependencies"], ans: 1, exp: "Unlike CPM, which focuses purely on task dependencies and duration, CCM incorporates resource constraints and uses project, feeding, and resource buffers to protect the schedule from uncertainty." },
+            { q: "In a network diagram, a Finish-to-Finish (FF) dependency means:", options: ["The successor activity cannot start until the predecessor finishes", "The successor activity cannot finish until the predecessor finishes", "The successor activity cannot start until the predecessor starts", "The successor activity cannot finish until the predecessor starts"], ans: 1, exp: "A Finish-to-Finish (FF) dependency dictates that the successor activity cannot be completed until the predecessor activity is also completed." },
+            { q: "What is the purpose of 'What-If Scenario Analysis' in project scheduling?", options: ["To calculate the Expected Monetary Value of project risks", "To evaluate the potential impact of various scenarios (e.g., delayed delivery, resource loss) on the project schedule", "To determine the optimal sequencing of project activities", "To assign weights to different project methodologies"], ans: 1, exp: "What-If Scenario Analysis involves evaluating the schedule's response to different situations (like major delays or vendor bankruptcies) to create contingency and response plans." },
+            { q: "Which technique is used to create the Work Breakdown Structure (WBS)?", options: ["Decomposition", "Rolling wave planning", "Precedence diagramming", "Critical path analysis"], ans: 0, exp: "Decomposition is the technique used to subdivide project deliverables and project work into smaller, more manageable components to create the WBS." },
+            { q: "In the Precedence Diagramming Method (PDM), activities are represented by:", options: ["Arrows connecting events", "Nodes or boxes connected by dependency arrows", "Horizontal bars on a timeline", "Milestone diamonds"], ans: 1, exp: "In PDM, activities are represented by nodes (boxes), and the logical relationships (dependencies) between them are represented by arrows." },
+            { q: "A project assumption is BEST defined as:", options: ["A known constraint that limits the project team's options", "A factor considered to be true, real, or certain without proof for planning purposes", "A risk that has a high probability of occurring", "A formal approval of the project baseline"], ans: 1, exp: "An assumption is a factor in the planning process that is considered to be true, real, or certain without proof or demonstration. If assumptions prove false, they typically become project risks." },
+            { q: "If a project's Schedule Performance Index (SPI) is 0.85, what does this indicate?", options: ["The project is ahead of schedule", "The project is exactly on schedule", "The project is behind schedule, achieving only 85% of the planned work", "The project has exceeded its budget by 15%"], ans: 2, exp: "SPI is calculated as Earned Value (EV) divided by Planned Value (PV). An SPI less than 1.0 indicates that the project is progressing at less than the rate originally planned (behind schedule)." },
+            { q: "Which of the following is an output of the 'Develop Schedule' process?", options: ["Activity list", "Project schedule baseline", "Work Breakdown Structure", "Network diagrams"], ans: 1, exp: "The primary output of the Develop Schedule process is the project schedule model and, once approved, the schedule baseline, which is used to measure performance." },
+            { q: "Negative float in a project schedule indicates that:", options: ["The project has excess time and resources", "The project is ahead of schedule", "The project end date is later than the required deadline, and the schedule must be compressed", "The critical path has been eliminated"], ans: 2, exp: "Negative float occurs when the calculated project completion date is later than the imposed deadline or constraint. It indicates that schedule compression techniques (like crashing or fast-tracking) are required." },
+            { q: "In Agile project management, scheduling is primarily managed through:", options: ["Detailed Gantt charts spanning the entire project lifecycle", "Timeboxed iterations (sprints) and a prioritized product backlog", "Strict Finish-to-Start dependencies mapped in a network diagram", "Fixed milestones with no flexibility for reprioritization"], ans: 1, exp: "Agile scheduling relies on timeboxed iterations (sprints) where the team pulls work from a continuously prioritized product backlog, allowing for high flexibility and adaptability." },
+            { q: "A 'lag' in project scheduling refers to:", options: ["An acceleration of the successor activity", "A delay or waiting time between a predecessor and successor activity", "The total float available on the critical path", "The time required to crash an activity"], ans: 1, exp: "A lag is a delay or waiting time inserted between activities. For example, allowing concrete to cure for several days before starting the next activity." },
+            { q: "Which document formally authorizes the project and provides the project manager with the authority to apply organizational resources?", options: ["Project Management Plan", "Work Breakdown Structure", "Project Charter", "Schedule Baseline"], ans: 2, exp: "The Project Charter is the document issued by the project initiator or sponsor that formally authorizes the existence of the project and provides the PM with authority to apply resources." },
+            { q: "When creating a project schedule, 'constraints' refer to:", options: ["Factors that limit the project team's options, such as imposed dates or resource availability", "Assumptions made about future project conditions", "The total budget allocated for project execution", "The list of identified project risks"], ans: 0, exp: "Constraints are limiting factors that affect the performance of the project, such as hard deadlines (imposed dates), budget caps, or resource availability." },
+            { q: "A project manager is reviewing the schedule and notices that the project completion date is two weeks later than the sponsor's required deadline. What should the project manager do FIRST?", options: ["Immediately request a budget increase to crash the schedule", "Analyze the critical path to identify opportunities for schedule compression (fast-tracking or crashing)", "Remove scope from the project to meet the deadline", "Inform the sponsor that the deadline cannot be met"], ans: 1, exp: "When faced with a schedule overrun, the PM should first analyze the critical path to evaluate schedule compression options (fast-tracking or crashing) before requesting more budget or reducing scope." },
+            { q: "The approved version of the schedule model that is used as a basis for comparison to actual results is known as the:", options: ["Project schedule", "Schedule baseline", "Milestone chart", "Resource histogram"], ans: 1, exp: "The schedule baseline is the approved version of a schedule model that can be changed only through formal change control procedures. It is used as a basis for comparison to actual results." }
+        ],
         8: [
             { q: "Which statement BEST captures the meaning of 'quality' in project management?", options: ["Achieving the highest possible grade of materials and features in every deliverable.", "The degree to which inherent characteristics of a deliverable fulfil stated requirements and are fit for use.", "Completing the project within the approved budget and schedule.", "Ensuring all team members follow the project manager's instructions without deviation."], ans: 1, exp: "Quality is 'the degree to which a set of inherent characteristics fulfil requirements.' Quality is about fitness for use and conformance to agreed specifications — not about the highest grade or most expensive materials." },
             { q: "A project team delivers a luxury executive office at premium cost but discovers the building's air-conditioning system fails every month. Which quality concept does this BEST illustrate?", options: ["High grade but low quality.", "High quality but low grade.", "Both high grade and high quality.", "Neither quality nor grade applies to construction projects."], ans: 0, exp: "Grade refers to a category rank (luxury vs economy), while quality relates to conformance to requirements. A high-grade product (luxury features) that repeatedly fails to perform its function is low quality." },
@@ -535,10 +486,9 @@
         }
     }
 
-    let currentState = { studentCode: null, isAdmin: false, currentModuleId: null, currentQuestionIndex: 0, score: 0, questions: [], hasAnswered: false, startTime: null };
-    let moduleTimerInterval, questionTimerInterval;
+    let currentState = { studentCode: null, isAdmin: false, currentModuleId: null, currentQuestionIndex: 0, score: 0, questions: [], hasAnswered: false, startTime: null, userAnswers: [] };
+    let moduleTimerInterval;
     let moduleTimeLeft = 600;
-    let questionTimeLeft = 20;
 
     function validateLogin() {
         const input = document.getElementById('accessCodeInput').value.trim().toUpperCase();
@@ -565,11 +515,10 @@
     }
 
     function logout() {
-        currentState = { studentCode: null, isAdmin: false };
+        currentState = { studentCode: null, isAdmin: false, currentModuleId: null, currentQuestionIndex: 0, score: 0, questions: [], hasAnswered: false, startTime: null, userAnswers: [] };
         document.getElementById('accessCodeInput').value = '';
         document.getElementById('userInfo').style.display = 'none';
         clearInterval(moduleTimerInterval);
-        clearInterval(questionTimerInterval);
         showScreen('loginScreen');
     }
 
@@ -641,6 +590,7 @@
     function startQuiz() {
         currentState.currentQuestionIndex = 0;
         currentState.score = 0;
+        currentState.userAnswers = [];
         currentState.questions = [...questionBank[currentState.currentModuleId]];
         const mod = modules.find(m => m.id === currentState.currentModuleId);
         document.getElementById('quizModuleTitle').textContent = mod.title;
@@ -659,38 +609,14 @@
             updateTimerDisplay();
             if (moduleTimeLeft <= 0) endQuiz(true);
         }, 1000);
-        startQuestionTimer();
-    }
-
-    function startQuestionTimer() {
-        questionTimeLeft = 20;
-        clearInterval(questionTimerInterval);
-        questionTimerInterval = setInterval(() => {
-            questionTimeLeft--;
-            updateTimerDisplay();
-            if (questionTimeLeft <= 0) {
-                clearInterval(questionTimerInterval);
-                if (!currentState.hasAnswered) {
-                    const qData = currentState.questions[currentState.currentQuestionIndex];
-                    const options = document.querySelectorAll('.option-item');
-                    options[qData.ans].classList.add('correct');
-                    showExplanation(qData.exp);
-                    currentState.hasAnswered = true;
-                    document.getElementById('nextBtn').disabled = false;
-                    setTimeout(() => nextQuestion(), 2500);
-                }
-            }
-        }, 1000);
     }
 
     function updateTimerDisplay() {
         const mMin = Math.floor(moduleTimeLeft / 60);
         const mSec = moduleTimeLeft % 60;
-        const qSec = questionTimeLeft;
         document.getElementById('moduleTimer').textContent = `${mMin}:${mSec < 10 ? '0' : ''}${mSec}`;
-        document.getElementById('questionTimer').textContent = `00:${qSec < 10 ? '0' : ''}${qSec}`;
         const timerBox = document.getElementById('timerDisplay');
-        if (moduleTimeLeft <= 60 || questionTimeLeft <= 5) timerBox.classList.add('warning');
+        if (moduleTimeLeft <= 60) timerBox.classList.add('warning');
         else timerBox.classList.remove('warning');
     }
 
@@ -713,13 +639,13 @@
             li.onclick = () => selectOption(index, li);
             optionsList.appendChild(li);
         });
-        startQuestionTimer();
     }
 
     function selectOption(selectedIndex, element) {
         if (currentState.hasAnswered) return;
         currentState.hasAnswered = true;
-        clearInterval(questionTimerInterval);
+        currentState.userAnswers.push(selectedIndex);
+        
         const qData = currentState.questions[currentState.currentQuestionIndex];
         const options = document.querySelectorAll('.option-item');
         if (selectedIndex === qData.ans) {
@@ -747,7 +673,12 @@
 
     function endQuiz(timeUp) {
         clearInterval(moduleTimerInterval);
-        clearInterval(questionTimerInterval);
+        
+        // Pad unanswered questions if time ran out or exited early
+        while (currentState.userAnswers.length < currentState.questions.length) {
+            currentState.userAnswers.push(-1);
+        }
+        
         const total = currentState.questions.length;
         const score = currentState.score;
         const percentage = Math.round((score / total) * 100);
@@ -765,6 +696,56 @@
 
     function confirmExit() {
         if (confirm("Are you sure you want to exit? Your progress will be lost and scored as 0.")) endQuiz(false);
+    }
+
+    function showReview() {
+        const reviewContent = document.getElementById('reviewContent');
+        reviewContent.innerHTML = '';
+        
+        currentState.questions.forEach((qData, index) => {
+            const userAns = currentState.userAnswers[index];
+            const isCorrect = userAns === qData.ans;
+            const isSkipped = userAns === -1;
+            
+            let itemClass = 'review-item';
+            if (isSkipped) itemClass += ' skipped';
+            else if (isCorrect) itemClass += ' correct';
+            else itemClass += ' incorrect';
+            
+            let optionsHtml = '<ul class="review-options">';
+            const labels = ['A', 'B', 'C', 'D'];
+            qData.options.forEach((opt, optIdx) => {
+                let liClass = '';
+                let prefix = '';
+                if (optIdx === qData.ans) {
+                    liClass = 'correct-answer';
+                    prefix = '✓ ';
+                } else if (optIdx === userAns && !isCorrect) {
+                    liClass = 'user-wrong';
+                    prefix = '✗ ';
+                }
+                optionsHtml += `<li class="${liClass}">${prefix}<strong>${labels[optIdx]}.</strong> ${opt}</li>`;
+            });
+            optionsHtml += '</ul>';
+            
+            let statusText = '';
+            if (isSkipped) statusText = '<span style="color: #6c757d; font-weight: bold;">Skipped / Time Up</span>';
+            else if (isCorrect) statusText = '<span style="color: var(--success); font-weight: bold;">Correct</span>';
+            else statusText = '<span style="color: var(--error); font-weight: bold;">Incorrect</span>';
+            
+            const itemHtml = `
+                <div class="${itemClass}">
+                    <div class="review-question">Q${index + 1}. ${qData.q} ${statusText}</div>
+                    ${optionsHtml}
+                    <div class="review-explanation">
+                        <strong>Explanation:</strong> ${qData.exp || "Review the module materials for detailed concepts."}
+                    </div>
+                </div>
+            `;
+            reviewContent.innerHTML += itemHtml;
+        });
+        
+        showScreen('reviewScreen');
     }
 
     function returnToDashboard() {
